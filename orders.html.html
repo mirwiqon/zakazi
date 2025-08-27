@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Учет заказов</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            padding: 15px;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #2d2d2d;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .input-group {
+            display: flex;
+            flex: 1;
+            min-width: 250px;
+            gap: 10px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background-color: #3d3d3d;
+            color: #fff;
+            font-size: 16px;
+        }
+        
+        input::placeholder {
+            color: #aaa;
+        }
+        
+        button {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .btn-primary {
+            background-color: #a769c9;
+            color: white;
+        }
+        
+        .btn-primary:hover, .btn-primary:active {
+            background-color: #9259b3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover, .btn-danger:active {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover, .btn-warning:active {
+            background-color: #e67e22;
+            transform: translateY(-2px);
+        }
+        
+        .btn-remove {
+            background-color: #7d3f8a;
+            color: white;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        
+        .btn-remove:hover, .btn-remove:active {
+            background-color: #6a2c79;
+        }
+        
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .table-card {
+            background-color: #3d3d3d;
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border-left: 5px solid #a769c9;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .table-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #a769c9;
+        }
+        
+        .order-content {
+            min-height: 120px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #4d4d4d;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            flex-grow: 1;
+            overflow-y: auto;
+            touch-action: manipulation;
+        }
+        
+        .empty-order {
+            color: #888;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .table-actions button {
+            flex: 1;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+        
+        .modal-content {
+            background-color: #3d3d3d;
+            padding: 25px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #555;
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #a769c9;
+        }
+        
+        .close {
+            font-size: 28px;
+            cursor: pointer;
+            color: #aaa;
+            background: none;
+            border: none;
+            color: #aaa;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 180px;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            resize: vertical;
+            background-color: #4d4d4d;
+            color: #fff;
+            font-size: 16px;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #a769c9;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1001;
+            font-weight: 600;
+        }
+        
+        .notification.show {
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .tables-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .input-group {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .table-card {
+                padding: 15px;
+            }
+            
+            .table-actions {
+                flex-direction: column;
+            }
+            
+            button {
+                padding: 12px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+        }
+        
+        /* Стили для улучшения работы на мобильных устройствах */
+        .btn-mobile-friendly {
+            min-height: 44px;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Улучшенные стили для мобильного ввода */
+        input, textarea {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <div class="input-group">
+                <input type="number" id="newTableNumber" placeholder="Номер стола" min="1">
+                <button id="addTableBtn" class="btn-primary btn-mobile-friendly">Добавить стол</button>
+            </div>
+            <button id="clearAllBtn" class="btn-danger btn-mobile-friendly">Удалить все столы</button>
+        </div>
+        
+        <div class="tables-grid" id="tablesContainer">
+            <!-- Столы будут добавляться здесь -->
+        </div>
+    </div>
+
+    <!-- Модальное окно для редактирования заказа -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Редактирование заказа</h2>
+                <button class="close" id="closeModal">&times;</button>
+            </div>
+            <textarea id="orderText" placeholder="Введите заказ..."></textarea>
+            <button id="saveOrderBtn" class="btn-primary btn-mobile-friendly">Сохранить заказ</button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">Заказ сохранен!</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Элементы DOM
+            const tablesContainer = document.getElementById('tablesContainer');
+            const newTableNumberInput = document.getElementById('newTableNumber');
+            const addTableBtn = document.getElementById('addTableBtn');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+            const editModal = document.getElementById('editModal');
+            const closeModalBtn = document.getElementById('closeModal');
+            const orderText = document.getElementById('orderText');
+            const saveOrderBtn = document.getElementById('saveOrderBtn');
+            const modalTitle = document.getElementById('modalTitle');
+            const notification = document.getElementById('notification');
+            
+            // Текущий редактируемый стол
+            let currentEditingTable = null;
+            
+            // Загрузка данных из localStorage
+            loadTables();
+            
+            // Добавление нового стола
+            addTableBtn.addEventListener('click', function() {
+                const tableNumber = newTableNumberInput.value.trim();
+                if (!tableNumber) {
+                    showNotification('Введите номер стола', false);
+                    return;
+                }
+                
+                if (isTableExists(tableNumber)) {
+                    showNotification('Стол с таким номером уже существует', false);
+                    return;
+                }
+                
+                addTable(tableNumber);
+                newTableNumberInput.value = '';
+                saveTables();
+                showNotification('Стол добавлен');
+            });
+            
+            // Удаление всех столов
+            clearAllBtn.addEventListener('click', function() {
+                if (confirm('Вы уверены, что хотите удалить все столы?')) {
+                    clearAllTables();
+                    showNotification('Все столы удалены');
+                }
+            });
+            
+            // Закрытие модального окна
+            closeModalBtn.addEventListener('click', function() {
+                editModal.style.display = 'none';
+            });
+            
+            // Сохранение заказа
+            saveOrderBtn.addEventListener('click', function() {
+                if (currentEditingTable) {
+                    const order = orderText.value.trim();
+                    const tableElement = document.getElementById(`table-${currentEditingTable}`);
+                    const orderContent = tableElement.querySelector('.order-content');
+                    
+                    if (order) {
+                        orderContent.textContent = order;
+                        orderContent.classList.remove('empty-order');
+                    } else {
+                        orderContent.textContent = 'Заказ отсутствует';
+                        orderContent.classList.add('empty-order');
+                    }
+                    
+                    saveTables();
+                    editModal.style.display = 'none';
+                    showNotification('Заказ сохранен');
+                }
+            });
+            
+            // Используем делегирование событий для динамически созданных элементов
+            tablesContainer.addEventListener('click', function(e) {
+                // Обработка клика на кнопку удаления стола
+                if (e.target.classList.contains('remove-table')) {
+                    const tableNumber = e.target.getAttribute('data-table');
+                    removeTable(tableNumber);
+                    return;
+                }
+                
+                // Обработка клика на кнопку очистки заказа
+                if (e.target.classList.contains('clear-order')) {
+                    const tableNumber = e.target.getAttribute('data-table');
+                    clearOrder(tableNumber);
+                    return;
+                }
+                
+                // Обработка клика на кнопку редактирования заказа
+                if (e.target.classList.contains('edit-order')) {
+                    const tableNumber = e.target.getAttribute('data-table');
+                    openEditModal(tableNumber);
+                    return;
+                }
+                
+                // Обработка клика на область заказа
+                if (e.target.classList.contains('order-content')) {
+                    const tableCard = e.target.closest('.table-card');
+                    const tableNumber = tableCard.getAttribute('data-table');
+                    openEditModal(tableNumber);
+                }
+            });
+            
+            // Добавляем обработчики для touch-событий на мобильных устройствах
+            tablesContainer.addEventListener('touchstart', function(e) {
+                // Предотвращаем выделение текста при касании
+                if (e.target.classList.contains('order-content') || 
+                    e.target.classList.contains('remove-table') || 
+                    e.target.classList.contains('clear-order') || 
+                    e.target.classList.contains('edit-order')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Функция показа уведомления
+            function showNotification(message, isSuccess = true) {
+                notification.textContent = message;
+                notification.style.backgroundColor = isSuccess ? '#a769c9' : '#e74c3c';
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 2000);
+            }
+            
+            // Функция загрузки столов из localStorage
+            function loadTables() {
+                const tables = JSON.parse(localStorage.getItem('restaurantTables')) || [];
+                tables.forEach(table => {
+                    addTable(table.number, table.order);
+                });
+            }
+            
+            // Функция сохранения столов в localStorage
+            function saveTables() {
+                const tableElements = tablesContainer.querySelectorAll('.table-card');
+                const tables = [];
+                
+                tableElements.forEach(element => {
+                    const number = element.getAttribute('data-table');
+                    const orderElement = element.querySelector('.order-content');
+                    const order = orderElement.classList.contains('empty-order') ? '' : orderElement.textContent;
+                    
+                    tables.push({
+                        number: number,
+                        order: order
+                    });
+                });
+                
+                localStorage.setItem('restaurantTables', JSON.stringify(tables));
+            }
+            
+            // Функция добавления стола в интерфейс
+            function addTable(number, order = '') {
+                const tableCard = document.createElement('div');
+                tableCard.className = 'table-card';
+                tableCard.id = `table-${number}`;
+                tableCard.setAttribute('data-table', number);
+                
+                tableCard.innerHTML = `
+                    <div class="table-header">
+                        <div class="table-number">Стол №${number}</div>
+                        <button class="btn-remove remove-table btn-mobile-friendly" data-table="${number}">×</button>
+                    </div>
+                    <div class="order-content ${order ? '' : 'empty-order'}">
+                        ${order || 'Заказ отсутствует'}
+                    </div>
+                    <div class="table-actions">
+                        <button class="btn-primary edit-order btn-mobile-friendly" data-table="${number}">Изменить заказ</button>
+                        <button class="btn-warning clear-order btn-mobile-friendly" data-table="${number}">Очистить заказ</button>
+                    </div>
+                `;
+                
+                tablesContainer.appendChild(tableCard);
+            }
+            
+            // Функция открытия модального окна для редактирования
+            function openEditModal(tableNumber) {
+                currentEditingTable = tableNumber;
+                const tableElement = document.getElementById(`table-${tableNumber}`);
+                const orderContent = tableElement.querySelector('.order-content');
+                
+                modalTitle.textContent = `Заказ для стола №${tableNumber}`;
+                orderText.value = orderContent.classList.contains('empty-order') ? '' : orderContent.textContent;
+                
+                editModal.style.display = 'flex';
+                orderText.focus();
+            }
+            
+            // Функция удаления стола
+            function removeTable(tableNumber) {
+                if (confirm(`Удалить стол №${tableNumber}?`)) {
+                    const tableElement = document.getElementById(`table-${tableNumber}`);
+                    if (tableElement) {
+                        tableElement.remove();
+                        saveTables();
+                        showNotification(`Стол №${tableNumber} удален`);
+                    }
+                }
+            }
+            
+            // Функция очистки заказа (без удаления стола)
+            function clearOrder(tableNumber) {
+                if (confirm(`Очистить заказ для стола №${tableNumber}?`)) {
+                    const tableElement = document.getElementById(`table-${tableNumber}`);
+                    const orderContent = tableElement.querySelector('.order-content');
+                    
+                    orderContent.textContent = 'Заказ отсутствует';
+                    orderContent.classList.add('empty-order');
+                    
+                    saveTables();
+                    showNotification(`Заказ для стола №${tableNumber} очищен`);
+                }
+            }
+            
+            // Функция удаления всех столов
+            function clearAllTables() {
+                if (tablesContainer.children.length === 0) {
+                    showNotification('Нет столов для удаления', false);
+                    return;
+                }
+                
+                tablesContainer.innerHTML = '';
+                localStorage.removeItem('restaurantTables');
+            }
+            
+            // Функция проверки существования стола
+            function isTableExists(tableNumber) {
+                return document.getElementById(`table-${tableNumber}`) !== null;
+            }
+            
+            // Закрытие модального окна при клике вне его
+            window.addEventListener('click', function(event) {
+                if (event.target === editModal) {
+                    editModal.style.display = 'none';
+                }
+            });
+            
+            // Обработка отправки формы
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && newTableNumberInput.value.trim() !== '') {
+                    addTableBtn.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
